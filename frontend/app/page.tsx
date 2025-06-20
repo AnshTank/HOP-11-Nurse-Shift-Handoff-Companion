@@ -1,15 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { WarmPatientCard } from "@/components/warm-patient-card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Heart, Users, Clock, Moon, Sun, ChevronLeft, ChevronRight, Mic, Plus } from "lucide-react"
-import type { PatientBasic, PatientStatus } from "@/types/patient-enhanced"
-import type { PatientSummary, HandoffEntry } from "@/types/shift-handoff"
-import { PatientDetailView } from "@/components/patient-detail-view"
-import { AddPatientModal } from "@/components/add-patient-modal"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react";
+import { WarmPatientCard } from "@/components/warm-patient-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Heart,
+  Users,
+  Clock,
+  Moon,
+  Sun,
+  ChevronLeft,
+  ChevronRight,
+  Mic,
+  Plus,
+} from "lucide-react";
+import type { PatientBasic, PatientStatus } from "@/types/patient-enhanced";
+import type { PatientSummary, HandoffEntry } from "@/types/shift-handoff";
+import { PatientDetailView } from "@/components/patient-detail-view";
+import { AddPatientModal } from "@/components/add-patient-modal";
+import { useRouter } from "next/navigation";
 
 const mockPatients: PatientBasic[] = [
   {
@@ -27,7 +37,10 @@ const mockPatients: PatientBasic[] = [
     hasAlerts: true,
     isPendingDischarge: false,
     requiresFollowUp: true,
-    nursingNotes: ["Patient reports chest pain", "Requires frequent monitoring"],
+    nursingNotes: [
+      "Patient reports chest pain",
+      "Requires frequent monitoring",
+    ],
   },
   {
     id: "2",
@@ -109,7 +122,7 @@ const mockPatients: PatientBasic[] = [
     requiresFollowUp: true,
     nursingNotes: ["On ventilator support", "Family meeting scheduled"],
   },
-]
+];
 
 const mockPatientStatuses: Record<string, PatientStatus> = {
   "1": {
@@ -154,7 +167,7 @@ const mockPatientStatuses: Record<string, PatientStatus> = {
     painLevel: 5,
     mobilityStatus: "bedrest",
   },
-}
+};
 
 const createMockSummary = (patientId: string): PatientSummary => ({
   patientId,
@@ -176,46 +189,53 @@ const createMockSummary = (patientId: string): PatientSummary => ({
     alerts: false,
   },
   lastUpdated: new Date().toISOString(),
-})
+});
 
 export default function NurseShiftCompanion() {
-  const [selectedPatient, setSelectedPatient] = useState<PatientBasic | undefined>()
-  const [patientSummaries, setPatientSummaries] = useState<Record<string, PatientSummary>>({})
-  const [currentTime, setCurrentTime] = useState(new Date())
-  const [activeTab, setActiveTab] = useState("handoff")
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
-  const [isHandoffMode, setIsHandoffMode] = useState(false)
-  const [showAddPatientModal, setShowAddPatientModal] = useState(false)
-  const [patients, setPatients] = useState<PatientBasic[]>(mockPatients)
-  const router = useRouter()
+  const [selectedPatient, setSelectedPatient] = useState<
+    PatientBasic | undefined
+  >();
+  const [patientSummaries, setPatientSummaries] = useState<
+    Record<string, PatientSummary>
+  >({});
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [activeTab, setActiveTab] = useState("handoff");
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isHandoffMode, setIsHandoffMode] = useState(false);
+  const [showAddPatientModal, setShowAddPatientModal] = useState(false);
+  const [patients, setPatients] = useState<PatientBasic[]>(mockPatients);
+  const router = useRouter();
 
   useEffect(() => {
-    console.log("Router ready:", router)
-  }, [router])
+    console.log("Router ready:", router);
+  }, [router]);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
-    return () => clearInterval(timer)
-  }, [])
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
-    const summaries: Record<string, PatientSummary> = {}
+    const summaries: Record<string, PatientSummary> = {};
     patients.forEach((patient) => {
-      summaries[patient.id] = createMockSummary(patient.id)
-    })
-    setPatientSummaries(summaries)
-  }, [])
+      summaries[patient.id] = createMockSummary(patient.id);
+    });
+    setPatientSummaries(summaries);
+  }, []);
 
-  const handleAddEntry = (patientId: string, entry: Omit<HandoffEntry, "id" | "timestamp">) => {
+  const handleAddEntry = (
+    patientId: string,
+    entry: Omit<HandoffEntry, "id" | "timestamp">
+  ) => {
     const newEntry: HandoffEntry = {
       ...entry,
       id: Date.now().toString(),
       timestamp: new Date().toISOString(),
-    }
+    };
 
     setPatientSummaries((prev) => {
-      const updated = { ...prev }
+      const updated = { ...prev };
       if (updated[patientId]) {
         updated[patientId] = {
           ...updated[patientId],
@@ -225,16 +245,16 @@ export default function NurseShiftCompanion() {
             [entry.category]: true,
           },
           lastUpdated: new Date().toISOString(),
-        }
+        };
       }
-      return updated
-    })
-  }
+      return updated;
+    });
+  };
 
   const handleCompleteHandoff = () => {
     if (selectedPatient) {
       setPatientSummaries((prev) => {
-        const updated = { ...prev }
+        const updated = { ...prev };
         if (updated[selectedPatient.id]) {
           updated[selectedPatient.id] = {
             ...updated[selectedPatient.id],
@@ -243,86 +263,91 @@ export default function NurseShiftCompanion() {
               status: "completed",
               endTime: new Date().toISOString(),
             },
-          }
+          };
         }
-        return updated
-      })
+        return updated;
+      });
 
       // Show success message and return to patient list
       setTimeout(() => {
-        setIsHandoffMode(false)
-        setSelectedPatient(undefined)
-      }, 2000)
+        setIsHandoffMode(false);
+        setSelectedPatient(undefined);
+      }, 2000);
     }
-  }
+  };
 
   const getShiftStatus = () => {
-    const now = new Date()
-    const hour = now.getHours()
-    if (hour >= 7 && hour < 19) return "day"
-    if (hour >= 19 && hour < 23) return "evening"
-    return "night"
-  }
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 7 && hour < 19) return "day";
+    if (hour >= 19 && hour < 23) return "evening";
+    return "night";
+  };
 
   const getCriticalCount = () => {
-    return patients.filter((p) => p.riskLevel === "critical" || p.acuityLevel >= 4).length
-  }
+    return patients.filter(
+      (p) => p.riskLevel === "critical" || p.acuityLevel >= 4
+    ).length;
+  };
 
   // Sort patients by priority
   const sortPatientsByPriority = (patients: PatientBasic[]) => {
     return [...patients].sort((a, b) => {
       // Critical patients first
-      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1
-      if (b.riskLevel === "critical" && a.riskLevel !== "critical") return 1
+      if (a.riskLevel === "critical" && b.riskLevel !== "critical") return -1;
+      if (b.riskLevel === "critical" && a.riskLevel !== "critical") return 1;
 
       // Then by acuity level (higher first)
       if (a.acuityLevel !== b.acuityLevel) {
-        return b.acuityLevel - a.acuityLevel
+        return b.acuityLevel - a.acuityLevel;
       }
 
       // Then by alerts
-      if (a.hasAlerts && !b.hasAlerts) return -1
-      if (b.hasAlerts && !a.hasAlerts) return 1
+      if (a.hasAlerts && !b.hasAlerts) return -1;
+      if (b.hasAlerts && !a.hasAlerts) return 1;
 
       // Then by risk level
-      const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 }
+      const riskOrder = { critical: 4, high: 3, medium: 2, low: 1 };
       if (a.riskLevel !== b.riskLevel) {
-        return riskOrder[b.riskLevel] - riskOrder[a.riskLevel]
+        return riskOrder[b.riskLevel] - riskOrder[a.riskLevel];
       }
 
       // Finally by name
-      return a.name.localeCompare(b.name)
-    })
-  }
+      return a.name.localeCompare(b.name);
+    });
+  };
 
-  const sortedPatients = sortPatientsByPriority(patients)
+  const sortedPatients = sortPatientsByPriority(patients);
 
   const handleAddPatient = (newPatientData: Omit<PatientBasic, "id">) => {
     const newPatient: PatientBasic = {
       ...newPatientData,
       id: Date.now().toString(),
-    }
+    };
 
-    setPatients((prev) => [...prev, newPatient])
-    setShowAddPatientModal(false)
-  }
+    setPatients((prev) => [...prev, newPatient]);
+    setShowAddPatientModal(false);
+  };
 
   const getVisiblePatients = () => {
-    const cardsPerView = 3
-    return sortedPatients.slice(currentCardIndex, currentCardIndex + cardsPerView)
-  }
+    const cardsPerView = 3;
+    return sortedPatients.slice(
+      currentCardIndex,
+      currentCardIndex + cardsPerView
+    );
+  };
 
   const nextCards = () => {
     if (currentCardIndex + 3 < sortedPatients.length) {
-      setCurrentCardIndex(currentCardIndex + 3)
+      setCurrentCardIndex(currentCardIndex + 3);
     }
-  }
+  };
 
   const prevCards = () => {
     if (currentCardIndex > 0) {
-      setCurrentCardIndex(Math.max(0, currentCardIndex - 3))
+      setCurrentCardIndex(Math.max(0, currentCardIndex - 3));
     }
-  }
+  };
 
   return (
     <div
@@ -344,7 +369,9 @@ export default function NurseShiftCompanion() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary-700 to-primary-500 bg-clip-text text-transparent">
                   Caring Handoff Companion
                 </h1>
-                <p className="text-gray-600 font-medium">Supporting compassionate patient care transitions ✨</p>
+                <p className="text-gray-600 font-medium">
+                  Supporting compassionate patient care transitions ✨
+                </p>
               </div>
             </div>
 
@@ -352,7 +379,9 @@ export default function NurseShiftCompanion() {
               <div className="flex items-center gap-4 text-gray-600">
                 <div className="flex items-center gap-2 bg-white/60 rounded-2xl px-4 py-2">
                   <Clock className="h-4 w-4" />
-                  <span className="font-medium">{currentTime.toLocaleTimeString()}</span>
+                  <span className="font-medium">
+                    {currentTime.toLocaleTimeString()}
+                  </span>
                 </div>
 
                 <Badge className="bg-gradient-to-r from-primary to-primary-400 text-white rounded-2xl px-4 py-2 capitalize">
@@ -361,7 +390,9 @@ export default function NurseShiftCompanion() {
 
                 <div className="flex items-center gap-2 bg-white/60 rounded-2xl px-4 py-2">
                   <Users className="h-4 w-4" />
-                  <span className="font-medium">{patients.length} Patients</span>
+                  <span className="font-medium">
+                    {patients.length} Patients
+                  </span>
                 </div>
 
                 {getCriticalCount() > 0 && (
@@ -385,7 +416,11 @@ export default function NurseShiftCompanion() {
                 onClick={() => setIsDarkMode(!isDarkMode)}
                 className="rounded-2xl border-primary-200 hover:bg-primary-50"
               >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkMode ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
@@ -399,14 +434,14 @@ export default function NurseShiftCompanion() {
             patient={selectedPatient}
             status={mockPatientStatuses[selectedPatient.id]}
             onClose={() => {
-              setIsHandoffMode(false)
-              setSelectedPatient(undefined)
+              setIsHandoffMode(false);
+              setSelectedPatient(undefined);
             }}
             onMarkReviewed={() => {
-              console.log("Patient reviewed")
+              console.log("Patient reviewed");
             }}
             onSaveNotes={(notes) => {
-              console.log("Notes saved:", notes)
+              console.log("Notes saved:", notes);
             }}
             isMobile={window.innerWidth < 768}
           />
@@ -414,8 +449,12 @@ export default function NurseShiftCompanion() {
           /* Patient Cards Carousel */
           <div className="space-y-8">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Patients Today</h2>
-              <p className="text-gray-600 text-lg">Select a patient to begin their handoff documentation</p>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                Your Patients Today
+              </h2>
+              <p className="text-gray-600 text-lg">
+                Select a patient to begin their handoff documentation
+              </p>
             </div>
 
             {/* Carousel Controls */}
@@ -431,11 +470,15 @@ export default function NurseShiftCompanion() {
               </Button>
 
               <div className="flex gap-2">
-                {Array.from({ length: Math.ceil(sortedPatients.length / 3) }).map((_, index) => (
+                {Array.from({
+                  length: Math.ceil(sortedPatients.length / 3),
+                }).map((_, index) => (
                   <div
                     key={index}
                     className={`w-2 h-2 rounded-full transition-all ${
-                      Math.floor(currentCardIndex / 3) === index ? "bg-primary w-8" : "bg-gray-300"
+                      Math.floor(currentCardIndex / 3) === index
+                        ? "bg-primary w-8"
+                        : "bg-gray-300"
                     }`}
                   />
                 ))}
@@ -462,8 +505,11 @@ export default function NurseShiftCompanion() {
                   isSelected={selectedPatient?.id === patient.id}
                   onSelect={() => setSelectedPatient(patient)}
                   onStartHandoff={() => {
-                    console.log("Navigating to patient details for:", patient.id)
-                    router.push(`/patient-details/${patient.id}`)
+                    console.log(
+                      "Navigating to patient details for:",
+                      patient.id
+                    );
+                    router.push(`/patient-details/${patient.id}`);
                   }}
                 />
               ))}
@@ -487,5 +533,5 @@ export default function NurseShiftCompanion() {
         />
       </main>
     </div>
-  )
+  );
 }
